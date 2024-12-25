@@ -1,4 +1,3 @@
-// server.ts
 import { serve } from "https://deno.land/std@0.208.0/http/server.ts";
 
 class User {
@@ -142,6 +141,12 @@ class GameServer {
       case "player_update":
         this.handlePlayerUpdate(sessionId, data.state);
         break;
+      case "getCheckpoint":
+        this.handleEventgame(sessionId, data.state, data.type);
+        break;
+      case "getPoint":
+        this.handleEventgame(sessionId, data.state, data.type);
+        break;
       case "game_action":
         this.handleGameAction(sessionId, data.action);
         break;
@@ -201,7 +206,18 @@ class GameServer {
       clientId: user.clientId,
     });
   }
-
+  private handleEventgame(sessionId: string, newState: any, action: string) {
+    const user = this.users.get(sessionId);
+    if (!user) return;
+    const roomId = this.clientRooms.get(user.userId);
+    if (!roomId) return;
+    this.broadcastToRoom(roomId, {
+      type: action,
+      userId: user.userId,
+      state: newState,
+      clientId: user.clientId,
+    });
+  }
   private handleGameAction(sessionId: string, action: any) {
     const user = this.users.get(sessionId);
     if (!user) return;
